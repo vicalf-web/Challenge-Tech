@@ -32,20 +32,15 @@
         <label for="email">Correo Electrónico:</label>
         <input type="email" id="email" placeholder="ejemplo@correo.com">
     </div>
-    <div class="form-group">
-            <label for="reclutadora">Reclutadora Asignada:</label>
-            <select id="reclutadora">
-                <option value="">-- Seleccione Reclutadora --</option>
-                <option value="sofia_flux">Sofia Simón</option>
-                <option value="lara_flux">Lara Juliano</option>
-                <option value="tamara_flux">Tamara Rojas</option>
-                <option value="camila_flux">Camila Cipollino</option>
-                <option value="guadalupe_flux">Guadalupe Silveyra</option>
-                <option value="victor_flux">Victor Díaz</option>
-               
-            </select>
-        </div>
 
+    <div class="form-group">
+    <label for="idiomaSelect">Idioma del Examen / Exam Language:</label>
+    <select id="idiomaSelect">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+    </select>
+</div>
+    
     <div class="form-group">
         <label for="tech">Tecnología / Rol a Evaluar:</label>
         <select id="tech" onchange="checkTechRequirements()">
@@ -108,12 +103,12 @@
 
     function irAlChallenge() {
         const nombre = document.getElementById('nombre').value.trim();
-        const reclutadora = document.getElementById('reclutadora').value;
         const email = document.getElementById('email').value.trim();
         const tech = document.getElementById('tech').value;
         const level = document.getElementById('level').value;
+        const idioma = document.getElementById('idiomaSelect').value;
 
-    if (!nombre || !email || !tech || !reclutadora) {
+    if (!nombre || !email || !tech) {
             alert("Por favor, completa todos los campos requeridos.");
             return;
         }
@@ -121,8 +116,8 @@
         // Guardar metadatos del candidato de forma persistente temporal
         localStorage.setItem('candidato_nombre', nombre);
         localStorage.setItem('candidato_email', email);
-        localStorage.setItem('reclutadora_asignada', reclutadora);
-
+        localStorage.setItem('idioma_elegido', idioma);
+        
         // Lógica de ruteo inteligente según la selección
 // Lógica de ruteo inteligente según la selección
         if (tech === 'architect' || tech === 'techlead' || tech === 'projectlead') {
