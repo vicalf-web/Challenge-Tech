@@ -1,0 +1,219 @@
+<script>
+    if (localStorage.getItem('test_realizado') === 'true') {
+        alert("Ya has completado esta evaluación. No puedes volver a realizarla.");
+        window.location.href = "index.html";
+    }
+</script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Técnico - Node.js</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #timer-sticky { position: fixed; top: 20px; right: 20px; background: #1a1a1a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; font-family: monospace; z-index: 1000; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        #thanks-box { display: none; text-align: center; padding: 40px; }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div id="timer-sticky">Tiempo: <span id="time">15:00</span></div>
+
+<div class="container" id="main-container">
+    <form id="hiddenRecruiterForm" action="https://formspree.io/f/mzdlzyab" method="POST" style="display:none;">
+        <input type="text" name="Candidato" id="form_nombre">
+        <input type="email" name="Email" id="form_email">
+        <input type="text" name="Tecnologia_Evaluada" id="form_tech">
+        <input type="text" name="Puntaje" id="form_score">
+        <input type="text" name="Seniority_Calculado" id="form_seniority">
+        <input type="text" name="Respuestas" id="form_details">
+        <input type="text" name="Reclutadora_Asignada" id="form_reclutadora">
+    </form>
+
+    <h1 id="exam-title">Cargando Examen...</h1>
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <div style="text-align:center; margin-top: 50px;">
+            <button type="button" id="submitBtn" onclick="processAndSend(false)">Finalizar Test</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" id="thanks-box">
+    <h2>¡Evaluación Finalizada!</h2>
+    <p style="color: #4a5568; font-size: 1.1rem;">Tus respuestas han sido registradas de manera segura.</p>
+    <p style="color: #718096;">El equipo de Recruiting revisará tu perfil y se pondrá en contacto contigo a la brevedad.</p>
+</div>
+
+<script>
+    const examDatabase = {
+        node_jr: {
+            title: "Node.js Developer - Junior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Qué es Node.js en esencia?", a: "Un nuevo framework frontend que reemplaza a React.", b: "Un entorno de ejecución para JavaScript construido sobre el motor V8 de Google Chrome que permite ejecutar código del lado del servidor.", c: "Una base de datos relacional de alta velocidad.", correct: "B" },
+                { id: 2, p: "2. ¿Qué significa que Node.js maneje un modelo de I/O no bloqueante (Non-blocking I/O)?", a: "Que bloquea el servidor web cuando ingresan demasiados usuarios.", b: "Que puede iniciar operaciones de entrada/salida (como leer un archivo o consultar una DB) y continuar ejecutando otras tareas sin esperar a que la operación termine.", c: "Que requiere obligatoriamente el uso de múltiples procesadores físicos en paralelo.", correct: "B" },
+                { id: 3, p: "3. ¿Cuál es el propósito del archivo 'package.json' en un proyecto de Node.js?", a: "Almacenar los registros lógicos del servidor en producción.", b: "Centralizar los metadatos del proyecto, scripts de arranque y registrar las dependencias y librerías utilizadas.", c: "Guardar las contraseñas cifradas de las bases de datos locales.", correct: "B" },
+                { id: 4, p: "4. ¿Cómo se importan módulos nativos o de terceros utilizando el sistema tradicional de CommonJS?", a: "Utilizando la directiva import module from 'nombre'.", b: "Utilizando la función nativa require('nombre').", c: "Pasando el nombre del módulo como una variable global.", correct: "B" },
+                { id: 5, p: "5. ¿Cuál es la función del comando 'npm install' en la terminal?", a: "Actualizar la versión del sistema operativo del servidor.", b: "Leer el archivo package.json e instalar de manera automática todas las dependencias listadas en la carpeta node_modules.", c: "Compilar el código JavaScript a binario de máquina ejecutable.", correct: "B" },
+                { id: 6, p: "6. ¿Qué comando nativo de la consola usarías para ejecutar un archivo de backend llamado 'server.js'?", a: "run server.js", b: "node server.js", c: "execute server.js", correct: "B" },
+                { id: 7, p: "7. ¿Para qué sirve el archivo oculto '.gitignore' en la raíz de un proyecto de Node.js?", a: "Ocultar funciones de negocio complejas ante el cliente.", b: "Indicar a Git qué archivos o carpetas pesadas/sensibles (como node_modules o variables .env) no deben subirse al repositorio.", c: "Acelerar la velocidad de red de las peticiones HTTP.", correct: "B" },
+                { id: 8, p: "8. ¿Cuál es el framework web minimalista más popular utilizado en Node.js para estructurar rutas y APIs de forma sencilla?", a: "Spring Boot Middleware", b: "Express", c: "Django Server Kit", correct: "B" },
+                { id: 9, p: "9. ¿Qué utilidad tiene el objeto global 'process.env' en una aplicación Node.js?", a: "Modificar la temperatura física del microprocesador del servidor.", b: "Dar acceso directo a las variables de entorno configuradas en el sistema operativo (ej: puertos o llaves API).", c: "Almacenar de forma inmutable el estado del frontend de la app.", correct: "B" },
+                { id: 10, p: "10. ¿Cómo se capturan errores en un bloque de código asíncrono utilizando la sintaxis moderna de async/await?", a: "Usando bloques condicionales if/else anidados.", b: "Envolviendo la lógica dentro de una estructura try/catch estándar.", c: "Escribiendo una alerta de error directo en la interfaz del cliente.", correct: "B" },
+                { id: 11, p: "11. ¿Qué es npm en el ecosistema de Node.js?", a: "Node Performance Monitor.", b: "Node Package Manager (el administrador oficial de paquetes y librerías por defecto de Node).", c: "Un motor de base de datos NoSQL clave-valor.", correct: "B" },
+                { id: 12, p: "12. ¿Cuál es el propósito del objeto 'global' en Node.js en comparación con el objeto 'window' de los navegadores?", a: "window y global son exactamente el mismo objeto en cualquier entorno.", b: "global es el objeto de alcance global del servidor de Node, equivalente a window que representa el alcance global del navegador del cliente.", c: "global se usa para encriptar los flujos de red de la aplicación.", correct: "B" },
+                { id: 13, p: "13. ¿Qué tipo de arquitectura de comunicación maneja de forma estándar una API REST construida con Node/Express?", a: "Peticiones síncronas bloqueantes orientadas a sockets físicos.", b: "Peticiones asíncronas basadas en el protocolo stateless HTTP devolviendo por lo general formato JSON.", c: "Transferencia binaria directa hacia clústeres de microcontroladores.", correct: "B" },
+                { id: 14, p: "14. ¿Qué función cumple el comando 'npm init' al comenzar un nuevo desarrollo?", a: "Borrar la memoria caché del gestor de dependencias.", b: "Iniciar un asistente interactivo por consola para crear el archivo de configuración package.json base.", c: "Levantar un servidor proxy seguro contra ataques DDoS.", correct: "B" },
+                { id: 15, p: "15. ¿Cuál es la diferencia entre usar 'npm install paquete' y 'npm install paquete --save-dev'?", a: "--save-dev instala el paquete directamente en el servidor de producción cloud.", b: "--save-dev registra la dependencia bajo 'devDependencies' indicando que solo es necesaria en etapas de desarrollo y testing, no en producción.", c: "No hay diferencia técnica real en el empaquetado del software.", correct: "B" },
+                { id: 16, p: "16. ¿Qué es una función 'Callback' en JavaScript/Node.js?", a: "Un método abstracto obligatorio que implementan las clases hijas.", b: "Una función que se pasa como argumento a otra función para ser ejecutada posteriormente al completarse una tarea asíncrona.", c: "Una directiva para forzar la recarga automática del servidor web.", correct: "B" },
+                { id: 17, p: "17. ¿Qué es el archivo 'package-lock.json' y por qué es una buena práctica técnica tenerlo en el repositorio?", a: "Un archivo de estilos que bloquea los CSS de presentación.", b: "Un archivo autogenerado que registra la estructura exacta y las versiones absolutas instaladas de todo el árbol de dependencias, garantizando builds idénticos.", c: "Un script que cifra las credenciales de Git.", correct: "B" },
+                { id: 18, p: "18. ¿Qué significa que Node.js sea una tecnología orientada a eventos (Event-Driven)?", a: "Que solo funciona de forma correcta si se programan alarmas periódicas mediante scripts cron.", b: "Que la ejecución del código está gobernada por un loop que escucha continuamente eventos y dispara las funciones controladoras asociadas de forma asíncrona.", c: "Que se especializa exclusivamente en plataformas de venta de entradas y retail dinámico.", correct: "B" },
+                { id: 19, p: "19. ¿Cuál de los siguientes módulos nativos de Node.js utilizarías si necesitás leer o escribir un archivo en el disco duro del servidor?", a: "http", b: "fs (File System)", c: "path", correct: "B" },
+                { id: 20, p: "20. ¿Qué representa el código de estado HTTP 404 devuelto por una API construida con Express?", a: "Que la petición fue procesada de manera exitosa y con datos válidos.", b: "Not Found (indica que el endpoint o recurso solicitado por el cliente no existe en las rutas declaradas del servidor).", c: "Internal Server Error (fallo crítico de código dentro de la lógica del backend).", correct: "B" }
+            ]
+        },
+        node_ssr: {
+            title: "Node.js Developer - Semi-Senior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Qué es el Event Loop (Bucle de Eventos) en Node.js y cuál es su responsabilidad primordial?", a: "Un mecanismo criptográfico que altera los hilos del hardware en producción.", b: "Un bucle de ejecución único encargado de coordinar la ejecución de tareas asíncronas, delegando operaciones bloqueantes a la pool de hilos de Libuv y recolectando los resultados.", c: "Un hilo redundante que clona la base de datos local de manera síncrona.", correct: "B" },
+                { id: 2, p: "2. Trabajando con Express, ¿qué es un 'Middleware' y cuál es su aplicación técnica común?", a: "Una base de datos documental intermedia para almacenar logs efímeros.", b: "Una función intermedia con acceso a los objetos de petición (req) y respuesta (res) que se usa para interceptar, validar datos, autenticar tokens o procesar errores antes de llegar al handler final.", c: "Un compilador para optimizar el bundle final de Node.", correct: "B" },
+                { id: 3, p: "3. ¿Cuál es el beneficio de utilizar 'Streams' de Node.js en lugar del método clásico fs.readFile() al procesar archivos gigantes de datos (ej: videos o logs masivos de gigabytes)?", a: "Streams convierte los datos a formato JSON de forma nativa ahorrando ancho de banda.", b: "fs.readFile() carga el archivo completo en la memoria RAM provocando desbordamientos; Streams procesa la información en bloques secuenciales pequeños (chunks) de forma eficiente.", c: "Streams ejecuta cifrado simétrico asíncronico automático en el canal de red.", correct: "B" },
+                { id: 4, p: "4. ¿Qué es un objeto 'Buffer' en el contexto de desarrollo backend con Node.js?", a: "Una capa intermedia que limita la cantidad de peticiones de los clientes.", b: "Una clase de utilidad global que permite manipular datos binarios crudos directamente fuera de la memoria de strings tradicionales de JavaScript.", c: "Una herramienta de testing para simular comportamientos de red headless.", correct: "B" },
+                { id: 5, p: "5. ¿Cuál es la diferencia técnica entre las funciones asíncronas 'process.nextTick()' y 'setImmediate()' en las fases del Event Loop?", a: "setImmediate() se ejecuta antes que cualquier otra tarea asíncrona de microtareas.", b: "process.nextTick() se ejecuta inmediatamente al finalizar la operación actual, antes de continuar con las fases del Event Loop; setImmediate() se encola en la fase de Check posterior.", c: "No hay diferencias de tiempos, ambas se ejecutan en paralelo en hilos idénticos.", correct: "B" },
+                { id: 6, p: "6. Diseñando una arquitectura escalable, ¿qué ventaja técnica aporta migrar una API tradicional escrita con JavaScript nativo en Express hacia el framework NestJS?", a: "NestJS elimina el uso del motor de ejecución V8 acelerando el código un 200%.", b: "Proporciona una arquitectura robusta, modular y fuertemente tipada por defecto (TypeScript) inspirada en conceptos sólidos como Inyección de Dependencias, decoradores y desacoplamiento limpio.", c: "NestJS integra de forma nativa bases de datos relacionales SQLite dentro del mismo archivo JS.", correct: "B" },
+                { id: 7, p: "7. ¿Cómo implementás de forma segura el manejo global de errores en una aplicación Express para evitar fugas de información de arquitectura al cliente?", a: "Escribiendo bloques try-catch individuales en cada línea del controlador de rutas.", b: "Definiendo un middleware de error específico al final del archivo de rutas que capture los fallos mediante cuatro parámetros (err, req, res, next), mapeando un estado sanitizado.", c: "Permitiendo que la aplicación tire un crash para que el orquestador de la nube reinicie el servidor de producción.", correct: "B" },
+                { id: 8, p: "8. ¿Qué problema crítico ocurre en Node.js si bloqueás el hilo principal ejecutando una operación computacional síncrona muy pesada (ej: calcular criptografía pesada en un bucle masivo)?", a: "El sistema duplica el pool de hilos de Libuv automáticamente para balancear la carga.", b: "Se detiene por completo el Event Loop, provocando que el servidor web deje de responder de manera inmediata a absolutamente todas las demás peticiones concurrentes de los usuarios.", c: "Se produce un error de sintaxis que invalida los módulos de CommonJS.", correct: "B" },
+                { id: 9, p: "9. Utilizando un ORM como Sequelize o un query builder como Knex, ¿cuál es la ventaja de manejar pools de conexiones (Connection Pooling) con la base de datos?", a: "Cifrar las claves primarias de las tablas relacionales locales.", b: "Mantener un conjunto persistente de conexiones abiertas listas para ser reutilizadas, optimizando los tiempos de respuesta y previniendo la sobrecarga por abrir/cerrar conexiones en cada request.", c: "Permitir consultas relacionales directas sin usar sentencias SQL estructuradas.", correct: "B" },
+                { id: 10, p: "10. ¿Para qué se utiliza el módulo nativo 'cluster' de Node.js al desplegar una aplicación en producción sobre un servidor con múltiples cores de CPU?", a: "Para compactar los archivos comprimidos zip de logs históricos.", b: "Para replicar la instancia de la aplicación en múltiples procesos hijos (workers) compartiendo el mismo puerto de red, aprovechando todos los núcleos físicos de la CPU.", c: "Para habilitar integraciones nativas con microservicios serverless de AWS.", correct: "B" },
+                { id: 11, p: "11. ¿Cuál es el propósito del framework de pruebas unitarias Jest o Mocha al testear controladores de Express backend?", a: "Simular ataques informáticos distribuidos de denegación de servicio (DDoS).", b: "Ejecutar pruebas automatizadas aislando la lógica mediante el uso de aserciones lógicas, mocks de bases de datos y validaciones de contratos de APIs.", c: "Optimizar el peso del bundle final de producción eliminando logs innecesarios.", correct: "B" },
+                { id: 12, p: "12. En Node.js, ¿cuál es la pool de hilos por defecto que maneja la librería interna Libuv para resolver tareas asíncronas bloqueantes de I/O y cuántos hilos tiene asignados por defecto?", a: "Maneja una pool síncrona ilimitada que escala según la RAM del hardware.", b: "Maneja una pool interna (Thread Pool) que cuenta con 4 hilos por defecto, configurable mediante la variable de entorno UV_THREADPOOL_SIZE.", c: "No utiliza pool de hilos; Libuv delega todo directamente a los navegadores del cliente.", correct: "B" },
+                { id: 13, p: "13. ¿Qué utilidad tiene implementar la técnica de Cross-Origin Resource Sharing (CORS) en una API robusta construida con Express?", a: "Acelerar los tiempos de transferencia de bytes a través de protocolos WebSockets.", b: "Definir políticas de seguridad para autorizar o denegar explíclitamente qué orígenes (dominios frontend externos) tienen permitido realizar peticiones cruzadas a la API.", c: "Encriptar las contraseñas de las sesiones de los usuarios guardadas localmente.", correct: "B" },
+                { id: 14, p: "14. ¿Qué diferencia conceptual existe entre los eventos 'error' y 'close' en un flujo de lectura utilizando un ReadStream de Node.js?", a: "El evento 'error' ocurre solo en servidores de desarrollo y 'close' en servidores cloud.", b: "'error' se gatilla si ocurre una falla en la lectura física del recurso; 'close' se dispara cuando el archivo o descriptor de origen se ha cerrado de forma definitiva y completa.", c: "Son sinónimos intercambiables por el optimizador lógico de JavaScript.", correct: "B" },
+                { id: 15, p: "15. ¿Para qué se utiliza la librería bcrypt en la capa de autenticación de backend?", a: "Para compilar el código TypeScript a lenguaje binario rápido.", b: "Para aplicar algoritmos seguros de hashing asimétrico con sal (salt) sobre contraseñas de usuarios antes de persistirlas en la base de datos.", c: "Para interceptar peticiones de red y validar la expiración de tokens JWT.", correct: "B" },
+                { id: 16, p: "16. Trabajando con sistemas basados en eventos (EventEmitter), ¿qué problema técnico podés causar si registrás oyentes (listeners) dentro de un bucle recurrente sin removerlos posteriormente?", a: "Un desbordamiento de pila en tiempo de compilación estática.", b: "Una fuga de memoria (Memory Leak), ya que el EventEmitter mantendrá vivas las referencias a las funciones controladoras impidiendo que el Garbage Collector las libere.", c: "Que las rutas de Express dejen de enrutar peticiones HTTP externas.", correct: "B" },
+                { id: 17, p: "17. Al utilizar tokens JWT para la seguridad de endpoints, ¿qué diferencia técnica clave hay entre la firma del token (Signature) y el payload?", a: "La firma se guarda de forma pública y el payload viaja oculto y encriptado de manera simétrica.", b: "El payload contiene los datos de usuario codificados en Base64 de forma pública y legible; la firma garantiza la integridad del token utilizando una clave secreta para verificar que el contenido no fue alterado.", c: "La firma es exclusiva para arquitecturas basadas en microservicios serverless.", correct: "B" },
+                { id: 18, p: "18. ¿Cuál es el propósito avanzado de configurar la directiva 'keep-alive' en un servidor HTTP de Express?", a: "Mantener encendida la máquina virtual de desarrollo de forma indefinida.", b: "Permitir que las conexiones TCP físicas de red se mantengan abiertas para múltiples peticiones consecutivas del mismo cliente, reduciendo la latencia de negociación.", c: "Borrar de manera automática las colecciones muertas de la caché en memoria RAM.", correct: "B" },
+                { id: 19, p: "19. ¿Qué ventaja técnica aporta usar la librería 'Helmet' en una aplicación corporativa de Node/Express?", a: "Comprimir de forma avanzada las imágenes estáticas devueltas por el servidor.", b: "Configurar de manera automatizada diversas cabeceras HTTP de seguridad (como X-XSS-Protection, Content-Security-Policy) para proteger la app contra vulnerabilidades web conocidas.", c: "Duplicar la velocidad de enrutamiento de consultas en bases de datos NoSQL.", correct: "B" },
+                { id: 20, p: "20. Si un flujo asíncrono en Express lee datos masivos y los escribe en un WriteStream pero la escritura va más lento que la lectura, ¿qué fenómeno técnico ocurre y cómo lo mitiga .pipe()?", a: "Ocurre un Stack Overflow; .pipe() cancela la transferencia de red de forma destructiva.", b: "Ocurre una saturación de memoria por acumulación de buffers (Backpressure); .pipe() lo mitiga gestionando de forma nativa la velocidad de los flujos pausando y reanudando automáticamente la lectura.", c: "Se congela el Event Loop principal de la aplicación.", correct: "B" }
+            ]
+        },
+        node_sr: {
+            title: "Node.js Developer - Senior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Cómo se comporta internamente el Garbage Collector de V8 en Node.js al segmentar la memoria entre 'New Space' (Scavenge) y 'Old Space' (Mark-Sweep-Compact)?", a: "El New Space guarda de forma exclusiva los strings globales encriptados del metaspace.", b: "New Space almacena objetos efímeros de vida corta y los limpia rápidamente mediante copias entre zonas semi-espacios (Scavenger); los sobrevivientes pasan al Old Space, donde se aplican algoritmos más costosos de marcado, barrido y compactación periódica.", c: "Scavenge es un proceso manual que requiere llamadas explícitas mediante el comando process.gc() por cron.", correct: "B" },
+                { id: 2, p: "2. Evaluando la concurrencia en Node.js de alto rendimiento, ¿cuándo decidirías implementar la API nativa de 'Worker Threads' sobre el escalado con el módulo 'cluster'?", a: "Cuando el Project Leader solicita una migración de base de datos relacional síncrona.", b: "Cuando la aplicación necesita resolver tareas de alto consumo computacional intensivas en CPU (como procesamiento de imágenes o criptografía compleja) en hilos separados compartiendo memoria, evitando bloquear el Event Loop.", c: "Cuando necesitas balancear peticiones HTTP stateless entre clústeres independientes de red.", correct: "B" },
+                { id: 3, p: "3. ¿Qué es una condición de carrera asíncrona (Asynchronous Race Condition) en Node.js y cómo la previenes en sistemas transaccionales distribuidos sin hilos concurrentes?", a: "Un error por colisión de hardware en las tarjetas de red de AWS/GCP.", b: "Ocurre cuando múltiples operaciones asíncronas intercalan su ejecución modificando el mismo recurso compartido de forma inconsistente; se previene mediante bloqueos lógicos distribuidos (como Redlock sobre Redis) o transacciones de base de datos atómicas.", c: "Un desbordamiento de buffers binarios; se mitiga removiendo los middlewares de Express.", correct: "B" },
+                { id: 4, p: "4. ¿Cómo diagnosticas y solucionas un cuello de botella severo provocado por el agotamiento latente del Thread Pool de Libuv en una app corporativa de alta transaccionalidad?", a: "Aumentando de forma desmedida la memoria RAM física del servidor de producción cloud.", b: "Se diagnostica capturando métricas de latencia en operaciones de I/O bloqueantes (criptografía, archivos); se soluciona dimensionando apropiadamente la variable de entorno UV_THREADPOOL_SIZE o migrando la lógica pesada a servicios externos.", c: "Deshabilitando las capacidades asíncronas de las promesas de NestJS.", correct: "B" },
+                { id: 5, p: "5. Desde la perspectiva de la seguridad arquitectónica (OWASP Top 10), ¿cómo mitigas el riesgo de ataques de denegación de servicio por expresiones regulares (ReDoS) en el backend?", a: "Cifrando la totalidad de las cadenas de texto del lado del cliente mediante algoritmos simétricos.", b: "Evitando el uso de expresiones regulares complejas o vulnerables que contengan patrones con agrupamientos anidados repetitivos (evaluaciones exponenciales en el motor de Regex de V8), y aplicando herramientas de análisis estático.", c: "Bloqueando de manera manual las direcciones IP de los usuarios que utilicen navegadores obsoletos.", correct: "B" },
+                { id: 6, p: "6. Diseñando una arquitectura de Microservicios que maneja un flujo masivo de eventos en tiempo real con Node.js, ¿por qué es crítico implementar mecanismos de Backpressure en los consumidores?", a: "Para evitar que el código TypeScript de NestJS falle en tiempo de compilación estática.", b: "Para prevenir que la acumulación de datos en memoria (buffers) desborde los recursos del servidor consumidor si este procesa la información a una velocidad menor de la que emite el broker, previniendo un OutOfMemoryError.", c: "Para forzar a que las conexiones TCP se vuelvan stateless de forma permanente.", correct: "B" },
+                { id: 7, p: "7. ¿Cómo optimizas el rendimiento de un backend Node.js en producción que se ve penalizado por operaciones masivas y repetitivas de serialización/deserialización de JSON pesado?", a: "Duplicando las estructuras de control condicionales dentro del pipeline de Express.", b: "Adoptando librerías de serialización optimizadas de alto rendimiento (como fast-json-stringify) que compilan esquemas de forma previa, o migrando el protocolo hacia Protocol Buffers (gRPC).", c: "Migrando los modelos del dominio de la aplicación a archivos XML planos de texto.", correct: "B" },
+                { id: 8, p: "8. Al realizar profiling profundo de memoria en Node.js usando un Heap Snapshot, ¿cuál es la diferencia crítica entre el tamaño de objeto conocido como 'Shallow Size' y 'Retained Size'?", a: "Shallow Size incluye las bases de datos externas asociadas; Retained Size mide los archivos de logs locales.", b: "Shallow Size es el tamaño físico de la memoria que ocupa el propio objeto de forma aislada; Retained Size es el tamaño de memoria que se liberaría de forma acumulada si dicho objeto fuera destruido por el Garbage Collector.", c: "Son sinónimos idénticos determinados por el motor criptográfico de NodeJS de producción.", correct: "B" },
+                { id: 9, p: "9. ¿Qué ventaja técnica avanzada aporta configurar la directiva 'expose-gc' en la ejecución de Node.js en entornos de testing automatizado de integración continua?", a: "Permite saltearse las reglas de firewalls de red para acelerar las llamadas API externas.", b: "Expone de forma explícita el método global gc(), permitiendo disparar de forma controlada y programada la recolección de basura para medir y diagnosticar con total precisión la existencia de fugas de memoria en las pruebas.", c: "Deshabilita por completo el Virtual DOM de los microfrontends locales.", correct: "B" },
+                { id: 10, p: "10. ¿Cuál es el peligro de seguridad y estabilidad de no manejar el evento 'unhandledRejection' de forma global en procesos corporativos de Node.js?", a: "Que el compilador de TypeScript rechace compilar las clases abstractas del backend.", b: "Provoca que excepciones asíncronas no capturadas dejen a la aplicación en un estado inconsistente o silencioso de degradación; las últimas versiones de Node fuerzan el fin del proceso con un código de error fatal por estabilidad.", c: "Ninguno, Node maneja y encapsula de forma silenciosa e infalible cualquier error asíncrono sin afectar los hilos.", correct: "B" },
+                { id: 11, p: "11. En una arquitectura de NestJS de alta disponibilidad, ¿cuál es la diferencia operativa estricta en el ciclo de vida del framework entre un Interceptor y un Exception Filter?", a: "El Exception Filter se ejecuta únicamente si la base de datos relacional se desconecta.", b: "El Interceptor intercepta y muta el flujo de peticiones/respuestas exitosas antes y después de llegar al handler; el Exception Filter captura de forma unificada las excepciones no controladas para sanitizar la salida.", c: "El Interceptor deshabilita las inyecciones de dependencias de la clase de servicios.", correct: "B" },
+                { id: 12, p: "12. ¿Cómo afecta la configuración de la bandera '--max-old-space-size' a nivel de infraestructura de contenedores (Docker/Kubernetes) al desplegar servicios Node.js?", a: "Configura el límite de conexiones concurrentes TCP que el servidor Express puede aceptar antes de colapsar.", b: "Define explíclitamente el límite máximo de memoria RAM que la JVM de V8 puede asignar al Old Space antes de disparar un crash por OutOfMemoryError, debiendo alinearse con los límites del contenedor.", c: "Controla de manera automática el tamaño físico de los archivos de logs guardados en el disco local.", correct: "B" },
+                { id: 13, p: "13. Si necesitas implementar un patrón de streaming bidireccional de baja latencia con alta concurrencia para canales electrónicos avanzados, ¿qué consideraciones de arquitectura debes prever al elegir WebSockets sobre HTTP/2 Server-Sent Events (SSE)?", a: "WebSockets requiere obligatoriamente que todas las tablas de base de datos sean documentales NoSQL.", b: "WebSockets maneja una conexión TCP dúplex completa ideal para flujos bidireccionales intensivos, pero introduce sobrecarga de gestión de estado de sesiones; SSE es óptimo y liviano si la comunicación es puramente unidireccional del servidor al cliente.", c: "SSE no soporta el transporte de tokens de autenticación cifrados en la cabecera.", correct: "B" },
+                { id: 14, p: "14. Al configurar el mecanismo de balanceo de carga interno del módulo cluster de Node.js en entornos de servidores Linux, ¿qué algoritmo maneja por defecto el sistema operativo para distribuir las conexiones entre los workers?", a: "Least Connections con pesos dinámicos configurables.", b: "Algoritmo Round-Robin, donde el proceso maestro escucha el puerto y distribuye las conexiones entrantes de forma equitativa y asíncrona evitando la saturación de los hilos hijos.", c: "Distribución aleatoria basada en hashing criptográfico de la dirección IP de origen.", correct: "B" },
+                { id: 15, p: "15. ¿Qué estrategia de mitigación técnica aplicarías en Node.js ante una vulnerabilidad de ataque por prototipo (Prototype Pollution)?", a: "Convertir todas las variables de los payloads a strings planos cifrados base64 de manera manual.", b: "Utilizar objetos planos creados mediante Object.create(null) para diccionarios dinámicos, congelar prototipos críticos con Object.freeze(), o aplicar esquemas estrictos de validación con librerías como Joi o Pydantic/Zod.", c: "Deshabilitar las capacidades de inyección de dependencias modulares del framework web.", correct: "B" },
+                { id: 16, p: "16. Trabajando con microservicios en Node.js, ¿por qué el uso de Transportadores orientados a gRPC (HTTP/2) aventaja drásticamente al esquema clásico de comunicación síncrona REST (HTTP/1.1) entre servicios internos?", a: "gRPC elimina la necesidad de realizar pruebas unitarias automatizadas de integración continua.", b: "gRPC utiliza multiplexación sobre conexiones persistentes únicas de HTTP/2 y serialización eficiente binaria con Protocol Buffers, reduciendo drásticamente la latencia, el ancho de banda y la sobrecarga de CPU.", c: "REST es exclusivo para servidores de base de datos relacionales locales de tipo Microsoft SQL Server.", correct: "B" },
+                { id: 17, p: "17. Al implementar pruebas de carga (Load Testing) sobre una API REST construida con NestJS utilizando herramientas como Artillery o K6, ¿qué métrica técnica de infraestructura te indica de forma inequívoca que la app está sufriendo contención de Event Loop?", a: "Un incremento lineal en el tamaño de los artefactos compilados del bundle en disco.", b: "Un aumento drástico en la métrica Event Loop Delay o latencia de p99 en las respuestas simultáneo a un bajo consumo general de los múltiples cores de CPU disponibles.", c: "La recarga forzada e involuntaria del LocalStorage de los clientes conectados.", correct: "B" },
+                { id: 18, p: "18. Utilizando la librería nativa 'crypto' para firmar digitalmente payloads financieros, ¿por qué es mandatorio preferir métodos asíncronos (como crypto.pbkdf2) en lugar de sus equivalentes síncronos dentro del backend?", a: "Los equivalentes síncronos modifican de forma irreversible los esquemas de bases de datos locales.", b: "Los métodos síncronos bloquean de forma completa el Event Loop único durante el costoso procesamiento matemático de cifrado de la CPU, congelando el servicio web; los asíncronos delegan la tarea a la pool de hilos de Libuv.", c: "Los asíncronos son los únicos compatibles con tokens JWT asimétricos firmados.", correct: "B" },
+                { id: 19, p: "19. ¿Cuál es el impacto arquitectónico y funcional de adoptar EcmaScript Modules (ESM con 'import/export') de forma nativa sobre el esquema clásico de CommonJS ('require') en proyectos Node.js modernos?", a: "ESM inhabilita la posibilidad de estructurar arquitecturas modulares o utilizar TypeScript.", b: "ESM introduce carga estática asíncrona de módulos que permite análisis en tiempo de compilación previa, facilitando optimizaciones agresivas de Tree-Shaking y unificación estricta del estándar con el navegador.", c: "CommonJS consume el doble de memoria RAM física debido a algoritmos síncronos obligatorios de búsqueda en disco.", correct: "B" },
+                { id: 20, p: "20. Diseñando un componente de pasarela de red (API Gateway) corporativo con Node.js, ¿cómo previene el arquitecto ataques por fuerza bruta o denegación de servicio a nivel de capa de aplicación (Layer 7)?", a: "Configurando scripts manuales que limpien las variables de sesión del servidor web de manera cíclica.", b: "Implementando middlewares estrictos de Rate Limiting apoyados en un almacén en memoria rápido y centralizado como Redis (utilizando algoritmos de Token Bucket o Leaky Bucket) para bloquear peticiones abusivas por IP.", c: "Deshabilitando de manera unilateral las capacidades de enrutamiento dinámico de las rutas de Express.", correct: "B" }
+            ]
+        }
+    };
+
+    function getRandomQuestions(bank, count) {
+        let shuffled = [...bank];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, count);
+    }
+
+    const currentLevel = localStorage.getItem('nivel_elegido') || 'node_jr';
+    const examData = examDatabase[currentLevel];
+    
+    document.getElementById('exam-title').innerText = examData.title;
+    const container = document.getElementById('questions-container');
+    
+    const selectedQuestions = getRandomQuestions(examData.questions, 10);
+    
+    selectedQuestions.forEach((item, index) => {
+        const visualIndex = index + 1;
+        const cleanText = item.p.replace(/^\d+\.\s*/, '');
+        
+        container.innerHTML += `
+            <div class="question" data-id="${item.id}" data-correct="${item.correct}">
+                <p>${visualIndex}. ${cleanText}</p>
+                <label><input type="radio" name="q${item.id}" value="A"> A) ${item.a}</label>
+                <label><input type="radio" name="q${item.id}" value="B"> B) ${item.b}</label>
+                <label><input type="radio" name="q${item.id}" value="C"> C) ${item.c}</label>
+            </div>
+        `;
+    });
+
+    let timeLimit = 15 * 60;
+    const timerDisplay = document.getElementById('time');
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(timeLimit / 60);
+        let seconds = timeLimit % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (timeLimit <= 0) { clearInterval(timerInterval); processAndSend(true); }
+        timeLimit--;
+    }, 1000);
+
+    function processAndSend(isAuto) {
+        clearInterval(timerInterval);
+        let score = 0;
+        let details = [];
+        let unanswered = false;
+
+        selectedQuestions.forEach((item) => {
+            const selected = document.querySelector(`input[name="q${item.id}"]:checked`);
+            if (!selected && !isAuto) { unanswered = true; }
+            
+            let val = selected ? selected.value : "X";
+            details.push(`PreguntaID_${item.id}:${val}`);
+            if (val === item.correct) score++;
+        });
+
+        if (unanswered && !isAuto) { 
+            alert("Por favor responde todas las preguntas antes de finalizar."); 
+            return; 
+        }
+
+        let seniority = "Junior (Jr)";
+        if (score >= 9) seniority = "Senior (Sr)";
+        else if (score >= 6) seniority = "Semi-Senior (Ssr)";
+
+        localStorage.setItem('test_realizado', 'true');
+
+        document.getElementById('form_nombre').value = localStorage.getItem('candidato_nombre');
+        document.getElementById('form_email').value = localStorage.getItem('candidato_email');
+        document.getElementById('form_tech').value = examData.title;
+        document.getElementById('form_score').value = `${score} / 10`;
+        document.getElementById('form_seniority').value = seniority;
+        document.getElementById('form_details').value = details.join(", ");
+        document.getElementById('form_reclutadora').value = localStorage.getItem('reclutadora_asignada');
+
+        document.getElementById('timer-sticky').style.display = "none";
+        document.getElementById('main-container').style.display = "none";
+        document.getElementById('thanks-box').style.display = "block";
+
+        document.getElementById('hiddenRecruiterForm').submit();
+    }
+</script>
+</body>
+</html>
