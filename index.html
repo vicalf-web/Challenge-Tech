@@ -32,33 +32,13 @@
         <label for="email">Correo Electrónico:</label>
         <input type="email" id="email" placeholder="ejemplo@correo.com">
     </div>
-
-    <div class="form-group">
-    <label for="idiomaSelect">Idioma del Examen / Exam Language:</label>
-    <select id="idiomaSelect">
-        <option value="es">Español</option>
-        <option value="en">English</option>
+ 
+ <div class="form-group">
+    <label for="techSelect">Role to Evaluate:</label>
+    <select id="techSelect">
+       <option value="fullstack">Full Stack Developer</option>
     </select>
 </div>
-    
-    <div class="form-group">
-        <label for="tech">Tecnología / Rol a Evaluar:</label>
-        <select id="tech" onchange="checkTechRequirements()">
-            <option value="">-- Seleccione una opción --</option>
-            <option value="java">Java Developer</option>
-            <option value="react">React Developer</option>
-            <option value="node">Node.js Developer</option>
-            <option value="angular">Angular Developer</option>
-            <option value="android">Android Developer</option>
-            <option value="ios">iOS Developer</option>
-            <option value="python">Python Developer</option>
-            <option value="powerbi">PowerBI</option>
-            <option value="datascience">Data Science</option>
-            <option value="architect">Solution Architect</option>
-            <option value="techlead">Technical Lead</option>
-            <option value="projectlead">Project Lead</option>
-        </select>
-    </div>
 
     <div class="form-group" id="seniority-container">
         <label for="level">Seniority Postulado:</label>
@@ -106,8 +86,7 @@
         const email = document.getElementById('email').value.trim();
         const tech = document.getElementById('tech').value;
         const level = document.getElementById('level').value;
-        const idioma = document.getElementById('idiomaSelect').value;
-
+       
     if (!nombre || !email || !tech) {
             alert("Por favor, completa todos los campos requeridos.");
             return;
@@ -116,8 +95,7 @@
         // Guardar metadatos del candidato de forma persistente temporal
         localStorage.setItem('candidato_nombre', nombre);
         localStorage.setItem('candidato_email', email);
-        localStorage.setItem('idioma_elegido', idioma);
-        
+             
         // Lógica de ruteo inteligente según la selección
 // Lógica de ruteo inteligente según la selección
         if (tech === 'architect' || tech === 'techlead' || tech === 'projectlead') {
