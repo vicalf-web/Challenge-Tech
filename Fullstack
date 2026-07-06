@@ -1,0 +1,218 @@
+<script>
+    if (localStorage.getItem('test_realizado') === 'true') {
+        alert("You have already completed this assessment. You cannot take it again.");
+        window.location.href = "index.html";
+    }
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Challenge - Full Stack</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #timer-sticky { position: fixed; top: 20px; right: 20px; background: #1a1a1a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; font-family: monospace; z-index: 1000; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        #thanks-box { display: none; text-align: center; padding: 40px; }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div id="timer-sticky">Time: <span id="time">15:00</span></div>
+
+<div class="container" id="main-container">
+    <form id="hiddenRecruiterForm" action="https://formspree.io/f/mzdlzyab" method="POST" style="display:none;">
+        <input type="text" name="Candidato" id="form_nombre">
+        <input type="email" name="Email" id="form_email">
+        <input type="text" name="Tecnologia_Evaluada" id="form_tech">
+        <input type="text" name="Puntaje" id="form_score">
+        <input type="text" name="Seniority_Calculado" id="form_seniority">
+        <input type="text" name="Respuestas" id="form_details">
+    </form>
+
+    <h1 id="exam-title">Loading Assessment...</h1>
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <div style="text-align:center; margin-top: 50px;">
+            <button type="button" id="submitBtn" onclick="processAndSend(false)">Submit Test</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" id="thanks-box">
+    <h2>Assessment Completed!</h2>
+    <p style="color: #4a5568; font-size: 1.1rem;">Your responses have been securely recorded.</p>
+    <p style="color: #718096;">The Recruiting team will review your profile and contact you shortly.</p>
+</div>
+
+<script>
+    const examDatabase = {
+        fullstack_jr: {
+            title: "Full Stack Developer - Junior Assessment",
+            questions: [
+                { id: 1, p: "1. Which of the following best describes the difference between GET and POST HTTP methods?", a: "GET is used to send sensitive data; POST is used to fetch public data.", b: "GET appends data to the URL for retrieving resources; POST sends data in the request body to create resources.", c: "GET is only supported by relational databases; POST is for NoSQL.", correct: "B" },
+                { id: 2, p: "2. In JavaScript, what is the purpose of the 'useEffect' hook in React?", a: "To directly modify the server-side database cache.", b: "To perform side effects in functional components, such as data fetching or subscriptions.", c: "To style HTML elements dynamically without CSS.", correct: "B" },
+                { id: 3, p: "3. What does CSS stand for?", a: "Computer Style Sheets", b: "Cascading Style Sheets", c: "Creative Styling Systems", correct: "B" },
+                { id: 4, p: "4. Which HTML tag is used to link an external JavaScript file?", a: "<link>", b: "<script>", c: "<js>", correct: "B" },
+                { id: 5, p: "5. In a relational database, what is a Primary Key?", a: "A key that connects to a third-party API service.", b: "A unique identifier for each record/row within a database table.", c: "The main password used to encrypt database backups.", correct: "B" },
+                { id: 6, p: "6. What is the purpose of Node.js?", a: "To style the frontend interface using visual trees.", b: "To execute JavaScript code outside a web browser, typically on the server side.", c: "To manage the cloud server hardware clusters dynamically.", correct: "B" },
+                { id: 7, p: "7. In Git, which command is used to save your local stage changes into the history repository?", a: "git push", b: "git commit", c: "git save", correct: "B" },
+                { id: 8, p: "8. What does API stand for?", a: "Application Programming Interface", b: "Automated Program Integration", c: "Advanced Protocol Identifier", correct: "A" },
+                { id: 9, p: "9. Which semantic HTML element should be used to define the main navigation links?", a: "<div class='nav'>", b: "<nav>", c: "<section>", correct: "B" },
+                { id: 10, p: "10. In JavaScript, what is the difference between '==' and '==='?", a: "'==' checks both value and type; '===' only checks the value.", b: "'==' checks values for equality with type coercion; '===' checks both value and type strictly.", c: "There is no difference; they are interchangeable.", correct: "B" },
+                { id: 11, p: "11. What is the purpose of the 'git clone' command?", a: "To delete a remote branch safely.", b: "To create a local copy of a remote repository.", c: "To duplicate a file inside your current working directory.", correct: "B" },
+                { id: 12, p: "12. In SQL, which keyword is used to retrieve data from a table?", a: "FETCH", b: "SELECT", c: "GET", correct: "B" },
+                { id: 13, p: "13. What is JSON?", a: "A programming language for server automation.", b: "A lightweight data-interchange format based on JavaScript object syntax.", c: "A styling framework for backend structures.", correct: "B" },
+                { id: 14, p: "14. Which status code represents a successful HTTPS request?", a: "404", b: "200", c: "500", correct: "B" },
+                { id: 15, p: "15. In Express.js, what is middleware?", a: "A tool to design database entity relationships.", b: "Functions that have access to the request object, response object, and the next function in the lifecycle.", c: "The interface between the monitor and the CPU unit.", correct: "B" },
+                { id: 16, p: "16. What does the 'npm' acronym stand for?", a: "Network Package Manager", b: "Node Package Manager", c: "Native Program Module", correct: "B" },
+                { id: 17, p: "17. What is MongoDB?", a: "A relational database managed by strict schemas.", b: "A NoSQL document-oriented database that stores data in flexible JSON-like formats.", c: "A JavaScript frontend framework.", correct: "B" },
+                { id: 18, p: "18. In React, how do you pass data down from a parent component to a child component?", a: "Using server sessions.", b: "Using Props.", c: "Using internal state hooks exclusively.", correct: "B" },
+                { id: 19, p: "19. Which HTML input type is best suited for letting a user enter a password securely?", a: "type='text'", b: "type='password'", c: "type='secret'", correct: "B" },
+                { id: 20, p: "20. What is the purpose of Git branches?", a: "To speed up the server download rates.", b: "To work on different features or fixes in isolation without affecting the main codebase.", c: "To back up code on local external hard drives.", correct: "B" }
+            ]
+        },
+        fullstack_ssr: {
+            title: "Full Stack Developer - Semi-Senior Assessment",
+            questions: [
+                { id: 1, p: "1. What is the primary purpose of using an ORM (Object-Relational Mapping) like Sequelize or Hibernate?", a: "To automatically compile JavaScript code into native machine code.", b: "To interact with a relational database using object-oriented code instead of raw SQL queries.", c: "To implement encrypted state management on the client-side.", correct: "B" },
+                { id: 2, p: "2. What is the difference between a SQL and a NoSQL database regarding schemas?", a: "SQL databases are schema-less; NoSQL databases require pre-defined schemas.", b: "SQL databases require strict, pre-defined structural schemas; NoSQL databases allow dynamic, schema-less structures.", c: "Both require identical table models and structures.", correct: "B" },
+                { id: 3, p: "3. In REST API architecture, which HTTP method is ideal for partially updating an existing resource?", a: "PUT", b: "PATCH", c: "POST", correct: "B" },
+                { id: 4, p: "4. What problem does a database Index solve?", a: "It encrypts stored records to prevent data injection attacks.", b: "It speeds up data retrieval operations on a table at the cost of additional storage and slower writes.", c: "It automatically formats JSON outputs.", correct: "B" },
+                { id: 5, p: "5. In React, what happens when a component's state changes?", a: "The entire browser page reloads completely.", b: "The component and its children are scheduled to re-render to update the UI.", c: "The server session is terminated.", correct: "B" },
+                { id: 6, p: "6. What is CORS (Cross-Origin Resource Sharing)?", a: "A backend tool to compress heavy API payloads.", b: "A browser security mechanism that allows or restricts requested resources on a web page from another domain.", c: "A protocol to route database connections.", correct: "B" },
+                { id: 7, p: "7. What is the main benefit of asynchronous programming (async/await) in Node.js?", a: "It turns JavaScript into a multi-threaded language natively.", b: "It allows non-blocking operations, letting the single-threaded event loop handle other requests while waiting for I/O tasks.", c: "It completely eliminates runtime bugs.", correct: "B" },
+                { id: 8, p: "8. In JWT (JSON Web Token) authentication, where should the token usually be sent in subsequent API requests?", a: "In the URL query parameters.", b: "In the Authorization header using the Bearer schema.", c: "In the database connection string.", correct: "B" },
+                { id: 9, p: "9. What is the purpose of database transactions (ACID properties)?", a: "To minimize cloud infrastructure costs.", b: "To ensure a sequence of operations executes reliably as a single unit, keeping the database consistent even during failures.", c: "To map object attributes to REST payloads.", correct: "B" },
+                { id: 10, p: "10. In JavaScript, what is a closure?", a: "A method used to safely terminate a running node process.", b: "A function that retains access to its lexical scope even when execution happens outside that scope.", c: "An internal loop statement.", correct: "B" },
+                { id: 11, p: "11. What is the purpose of Docker?", a: "To minify CSS files automatically.", b: "To containerize applications, packaging code and dependencies together so they run reliably across environments.", c: "To manage relational database records visually.", correct: "B" },
+                { id: 12, p: "12. In React, what is the main advantage of using the Context API?", a: "It replaces backend REST APIs completely.", b: "It provides a way to share values/state globally between components without passing props down manually through every level.", c: "It speeds up CSS engine calculations.", correct: "B" },
+                { id: 13, p: "13. What is a Foreign Key in SQL?", a: "A key that links a column to an external third-party authentication API.", b: "A column or group of columns that provides a link between data in two tables, enforcing referential integrity.", c: "An encryption string used for user data.", correct: "B" },
+                { id: 14, p: "14. What does the 401 HTTP status code mean?", a: "The requested resource was not found.", b: "The request lacks valid authentication credentials.", c: "The server encountered an unexpected condition.", correct: "B" },
+                { id: 15, p: "15. Why should passwords never be stored in plain text in a database?", a: "Because plain text takes up too much database storage space.", b: "To prevent compromise if the database is leaked; they should be hashed using robust algorithms like bcrypt.", c: "Because SQL tables do not support text data types securely.", correct: "B" },
+                { id: 16, p: "16. What is the purpose of environment variables (.env files)?", a: "To write runtime scripts for styling structures.", b: "To separate sensitive configuration keys (like database passwords or API secrets) from the application source code.", c: "To store candidate records temporarily.", correct: "B" },
+                { id: 17, p: "17. In Git, what is the difference between 'git merge' and 'git rebase'?", a: "'merge' deletes the commit history; 'rebase' preserves it.", b: "'merge' combines changes keeping the branch history graph intact; 'rebase' reapplies commits on top of another base tip, creating a linear history.", c: "They do exactly the same thing with no technical difference.", correct: "B" },
+                { id: 18, p: "18. What is Redis commonly used for in a backend stack?", a: "As the primary persistent relational data warehouse.", b: "As an in-memory data structure store used primarily for caching, sessions, and message brokers to improve speed.", c: "To render dynamic frontend components.", correct: "B" },
+                { id: 19, p: "19. Which of the following is a security vulnerability where an attacker injects malicious SQL statements into entry fields?", a: "Cross-Site Scripting (XSS)", b: "SQL Injection (SQLi)", c: "Cross-Site Request Forgery (CSRF)", correct: "B" },
+                { id: 20, p: "20. What is the purpose of unit testing in a Full Stack application?", a: "To double-check the server connection speed logs.", b: "To verify that individual isolated blocks or functions of code operate correctly as intended.", c: "To test the user interface responsiveness across mobile screens manually.", correct: "B" }
+            ]
+        },
+        fullstack_sr: {
+            title: "Full Stack Developer - Senior Assessment",
+            questions: [
+                { id: 1, p: "1. When designing a high-traffic system, how does a Senior developer mitigate database performance bottlenecks using horizontal scaling?", a: "By increasing the CPU and RAM capacity of the primary database server.", b: "By implementing database sharding or setting up a primary-replica architecture with read-replicas.", c: "By replacing the API layer entirely with a client-side state machine.", correct: "B" },
+                { id: 2, p: "2. What is a critical architectural risk when decomposing a large system into microservices?", a: "Slower unit testing execution on local machines.", b: "Increased operational complexity, data consistency challenges across distributed databases, and network latency.", c: "The inability to use NoSQL databases.", correct: "B" },
+                { id: 3, p: "3. How does Server-Side Rendering (SSR) in modern frameworks like Next.js compare to Client-Side Rendering (CSR) regarding SEO?", a: "CSR is superior because it executes JavaScript logic inside search engine bots natively.", b: "SSR provides fully rendered HTML to search engine bots on the initial request, significantly improving SEO indexability.", c: "There is no difference; search engines index both identically in real-time.", correct: "B" },
+                { id: 4, p: "4. What is the role of a reverse proxy like Nginx in a production architecture?", a: "To transform relational data columns into non-relational document trees.", b: "To handle load balancing, SSL termination, caching, and routing requests securely to backend application servers.", c: "To coordinate client-side React component lifecycles.", correct: "B" },
+                { id: 5, p: "5. In distributed systems, what does the CAP Theorem state?", a: "A system can optimize CPU, Assets, and Packets simultaneously.", b: "A distributed data store can simultaneously provide at most two out of three guarantees: Consistency, Availability, and Partition Tolerance.", c: "Caching Always Prevents bottlenecks.", correct: "B" },
+                { id: 6, p: "6. How would you handle continuous high-volume write spikes in an architecture to avoid overwhelming your relational database?", a: "By increasing the HTTP connection timeout on the frontend client app.", b: "By introducing a message queue (e.g., RabbitMQ, Kafka) to ingest writes asynchronously and process them at a controlled pace.", c: "By replacing all backend routes with synchronous GraphQL queries.", correct: "B" },
+                { id: 7, p: "7. What is Cross-Site Scripting (XSS) and how do you protect against it?", a: "An attack that overrides backend database indices; protected by clearing cache directories.", b: "An attack where malicious scripts are injected into trusted web pages; protected by sanitizing and escaping all user inputs before rendering.", c: "A system failure caused by overlapping CSS media queries.", correct: "B" },
+                { id: 8, p: "8. In a Node.js context, what happens if the main thread is blocked by CPU-heavy computations?", a: "The runtime automatically spawns background system clusters to handle standard requests.", b: "The entire event loop freezes, making the server completely unresponsive to any other incoming network requests.", c: "The process crashes immediately with a clean status exit code.", correct: "B" },
+                { id: 9, p: "9. What is the purpose of database Connection Pooling?", a: "To replicate identical data records across multiple distinct global cloud regions.", b: "To maintain a cache of reusable database connections, minimizing the expensive overhead of opening and closing connections frequently.", c: "To encrypt columns using distributed key chains.", correct: "B" },
+                { id: 10, p: "10. In microservices, how does the Saga Pattern handle distributed transactions?", a: "By locking all databases globally until every system updates successfully.", b: "By executing a sequence of local transactions, where each transaction updates data inside a single service and triggers the next step or a compensating rollback task.", c: "By converting all relational structures into high-speed memory buffers.", correct: "B" },
+                { id: 11, p: "11. What is the main benefit of optimizing Web Vitals (like LCP and CLS) on a frontend application?", a: "It guarantees zero server-side runtime errors.", b: "It significantly enhances user experience, engagement, and core search engine rankings.", c: "It automatically reduces database backup storage footprints.", correct: "B" },
+                { id: 12, p: "12. How does a Senior developer prevent race conditions when multiple app instances update the same database record simultaneously?", a: "By avoiding asynchronous functions completely.", b: "By implementing optimistic locking (version columns) or pessimistic locking (row-level locks) at the database layer.", c: "By running the servers on a single shared hardware thread core.", correct: "B" },
+                { id: 13, p: "13. What is the key advantage of using GraphQL over traditional REST APIs in complex frontend applications?", a: "GraphQL completely secures the data layer without requiring JWT schemas.", b: "It allows clients to query and receive exactly the data fields they need in a single request, preventing over-fetching and under-fetching.", c: "It eliminates the need for database indexing.", correct: "B" },
+                { id: 14, p: "14. What does blue-green deployment achieve in a CI/CD pipeline?", a: "It forces the application codebase to run code linters continuously.", b: "It reduces downtime and deployment risk by running two identical production environments, allowing instant traffic switching to the new version.", c: "It separates development files visually using color codes.", correct: "B" },
+                { id: 15, p: "15. What is the purpose of an API Gateway in a microservice architecture?", a: "To compile frontend bundles before cloud distributions.", b: "To serve as a single entry point for clients, managing routing, authentication, rate limiting, and protocol translation.", c: "To act as a persistent relational warehouse system.", correct: "B" },
+                { id: 16, p: "16. In React, how does the 'useMemo' hook optimize performance?", a: "By storing data permanently on the server-side memory stack.", b: "By memoizing the result of a computationally expensive calculation, re-running it only when specific dependencies change.", c: "By bypassing component re-renders entirely.", correct: "B" },
+                { id: 17, p: "17. What is Horizontal Pod Autoscaling (HPA) in a containerized environment like Kubernetes?", a: "Increasing the memory hardware capacity of a single physical server machine dynamically.", b: "Automatically scaling the number of running container pods up or down based on metrics like CPU utilization or request rates.", c: "Duplicating source files inside private code repositories.", correct: "B" },
+                { id: 18, p: "18. What security threat does implementing rate limiting on your API directly mitigate?", a: "SQL Injection vulnerabilities.", b: "Brute-force attacks, Denial of Service (DoS/DDoS) attempts, and brute API scraping scraping overload.", c: "Frontend source code theft.", correct: "B" },
+                { id: 19, p: "19. What is a Zero Downtime Database Migration strategy when updating columns in production?", a: "Stopping all servers temporarily during off-peak hours.", b: "Using a multi-step migration approach (Expand and Contract pattern) where code and database states are kept backward compatible throughout the release.", c: "Deleting the old database tables and restoring backups after updates.", correct: "B" },
+                { id: 20, p: "20. Why are WebSockets preferred over standard HTTP polling for real-time applications like live chat platforms?", a: "Because HTTP does not support transmission of text payloads securely.", b: "WebSockets provide a persistent, full-duplex, low-latency communication channel over a single TCP connection, eliminating HTTP request overhead.", c: "They consume fewer local RAM resources on client monitors.", correct: "B" }
+            ]
+        }
+    };
+
+    function getRandomQuestions(bank, count) {
+        let shuffled = [...bank];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, count);
+    }
+
+    const currentLevel = localStorage.getItem('nivel_elegido') || 'fullstack_jr';
+    const examData = examDatabase[currentLevel];
+    
+    document.getElementById('exam-title').innerText = examData.title;
+    const container = document.getElementById('questions-container');
+    
+    // Elige exactamente 10 preguntas aleatorias de las 20 disponibles
+    const selectedQuestions = getRandomQuestions(examData.questions, 10);
+    
+    selectedQuestions.forEach((item, index) => {
+        const visualIndex = index + 1;
+        const cleanText = item.p.replace(/^\d+\.\s*/, '');
+        
+        container.innerHTML += `
+            <div class="question" data-id="${item.id}" data-correct="${item.correct}">
+                <p>${visualIndex}. ${cleanText}</p>
+                <label><input type="radio" name="q${item.id}" value="A"> A) ${item.a}</label>
+                <label><input type="radio" name="q${item.id}" value="B"> B) ${item.b}</label>
+                <label><input type="radio" name="q${item.id}" value="C"> C) ${item.c}</label>
+            </div>
+        `;
+    });
+
+    let timeLimit = 15 * 60;
+    const timerDisplay = document.getElementById('time');
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(timeLimit / 60);
+        let seconds = timeLimit % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (timeLimit <= 0) { clearInterval(timerInterval); processAndSend(true); }
+        timeLimit--;
+    }, 1000);
+
+    function processAndSend(isAuto) {
+        clearInterval(timerInterval);
+        let score = 0;
+        let details = [];
+        let unanswered = false;
+
+        selectedQuestions.forEach((item) => {
+            const selected = document.querySelector(`input[name="q${item.id}"]:checked`);
+            if (!selected && !isAuto) { unanswered = true; }
+            
+            let val = selected ? selected.value : "X";
+            details.push(`QuestionID_${item.id}:${val}`);
+            if (val === item.correct) score++;
+        });
+
+        if (unanswered && !isAuto) { 
+            alert("Please answer all questions before submitting."); 
+            return; 
+        }
+
+        let seniority = "Junior (Jr)";
+        if (score >= 9) seniority = "Senior (Sr)";
+        else if (score >= 6) seniority = "Semi-Senior (Ssr)"; 
+
+        localStorage.setItem('test_realizado', 'true');
+
+        document.getElementById('form_nombre').value = localStorage.getItem('candidato_nombre');
+        document.getElementById('form_email').value = localStorage.getItem('candidato_email');
+        document.getElementById('form_tech').value = examData.title;
+        document.getElementById('form_score').value = `${score} / 10`;
+        document.getElementById('form_seniority').value = seniority;
+        document.getElementById('form_details').value = details.join(", ");
+
+        document.getElementById('timer-sticky').style.display = "none";
+        document.getElementById('main-container').style.display = "none";
+        document.getElementById('thanks-box').style.display = "block";
+
+        document.getElementById('hiddenRecruiterForm').submit();
+    }
+</script>
+</body>
+</html>
