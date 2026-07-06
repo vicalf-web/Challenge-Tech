@@ -84,7 +84,7 @@
     function irAlChallenge() {
         const nombre = document.getElementById('nombre').value.trim();
         const email = document.getElementById('email').value.trim();
-        const tech = document.getElementById('tech').value;
+       const tech = document.getElementById('techSelect').value;
         const level = document.getElementById('level').value;
        
     if (!nombre || !email || !tech) {
@@ -98,17 +98,8 @@
              
         // Lógica de ruteo inteligente según la selección
 // Lógica de ruteo inteligente según la selección
-        if (tech === 'architect' || tech === 'techlead' || tech === 'projectlead') {
-            localStorage.setItem('nivel_elegido', tech);
-            window.location.href = `${tech}.html`;
-        } else if (tech === 'powerbi' || tech === 'datascience') {
-            localStorage.setItem('nivel_elegido', `${tech}_${level}`);
-            window.location.href = `${tech}.html`;
-        } else {
-            // Ruteo dinámico para perfiles con niveles (Java, React, Node, Angular, Android, iOS, Python)
-            localStorage.setItem('nivel_elegido', `${tech}_${level}`);
-            window.location.href = `${tech}.html`;
-        }
+      localStorage.setItem('nivel_elegido', `${tech}_${level}`);
+    window.location.href = "fullstack.html";    
     }
 </script>
 </body>
